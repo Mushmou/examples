@@ -1,4 +1,3 @@
-from krakenio import Client
 import base64
 import tinify
 import tempfile
@@ -6,13 +5,23 @@ import os
 import json
 import requests
 
+'''
+input base 64 format : iVBORw0KGgoAAAANSUhEUgAAAaQAAALiCAY...QoH9hbkTPQAAAABJRU5ErkJggg== 
+output : bytes 
+'''
 def decode(encoded_value):
     decoded = base64.b64decode(encoded_value)
     return decoded
 
+'''
+input : open media file, bytes
+output : encoded base 64 
+'''
 def encode(plaintext):
     encoded = base64.b64encode(plaintext)
     return encoded
+
+res = None
 
 def main(req, res):
   try:
@@ -41,6 +50,17 @@ def main(req, res):
         i.write(decoded_image)
     
     if provider == 'krakenio':
+      # path = os.getcwd()
+      init_file_path = "/usr/local/src/userlib/__init__.py"
+      kraken_replace_path = "/usr/local/src/userlib/runtime-env/lib/python3.10/site-packages/krakenio/__init__.py"
+
+      init_file = open(init_file_path, "rt")
+      with open(kraken_replace_path, "w") as kraken_file:
+        kraken_file.write(init_file.read())
+      os.remove(init_file_path)
+
+      from krakenio import Client
+
       api_secret_key = variable['SECRET_API_KEY']
       # Authenticate the API Key and Secret Key
       api = Client(api_key, api_secret_key)
@@ -49,7 +69,7 @@ def main(req, res):
           'dev': True
       }
       # Uploading the decoded_image_path to the KrakenIO
-      result = api.upload(decoded_image_path, data);
+      result = api.upload(decoded_image_path, data)
       if result.get('success'):
           optimized_image_url = result.get('kraked_url')
           # Opening the newly created file and writing to the empty file
@@ -57,6 +77,9 @@ def main(req, res):
               optimized_image = requests.get(optimized_image_url, stream=True).content
               f.write(optimized_image)
       else:
+        os.remove(decoded_image_path)
+        os.remove(optimized_image_path)
+        os.rmdir(temp_dir)
         return res.json({"success": False, "message": "krakenio failed to compress image"})
     else:
       # Authenticating api key
@@ -69,7 +92,10 @@ def main(req, res):
     o = open(optimized_image_path, "rb")
     encoded_optimized_image = encode(o.read())
     o.close()
-    
+
+    os.remove(decoded_image_path)
+    os.remove(optimized_image_path)
+    os.rmdir(temp_dir)
     # Return a response in JSON
     return res.json(
     {
