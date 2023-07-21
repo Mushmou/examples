@@ -1,28 +1,20 @@
 import boto3
+import secret
+import base64
 
-# Specify the AWS region you want to use
-region_name = 'us-west-2'  # Replace this with your desired AWS region
+polly_client = boto3.Session(
+    aws_access_key_id=secret.aws_access_key_id,       
+    aws_secret_access_key=secret.aws_secret_access_key,
+    region_name='us-west-2').client('polly')
 
-# Initialize the Polly client with the specified region
-polly_client = boto3.client(
-    'polly',
-    region_name=region_name,
-    )
+t = "Hello, this is a sample text to be converted into speech."
 
-
-def text_to_speech(text, output_format='mp3', voice_id='Joanna'):
-    response = polly_client .synthesize_speech(
+response = polly_client.synthesize_speech(
+    VoiceId='Joanna',
     OutputFormat='mp3',
     SampleRate='8000',
-    Text=text,
+    Text=t,
     TextType='text',
-    VoiceId='Joanna',
-)
-    # Save the audio to a file (optional)
-    with open('output.mp3', 'wb') as f:
-        f.write(response['AudioStream'].read())
+    )
 
-    return response
-
-text = "Hello, this is a sample text to be converted into speech."
-response = text_to_speech(text)
+print(base64.b64encode(response['AudioStream'].read().decode()))
