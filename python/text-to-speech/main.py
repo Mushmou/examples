@@ -115,9 +115,13 @@ class Azure(TextToSpeech):
 
 
 class AWS(TextToSpeech):
-    """AWS API"""
+    """
+    This class represents the implementation of AWS text to speech.
+    """
+    api_key = None
+    secret_api_key = None
 
-    def validate_request(self, req):
+    def validate_request(self, req: requests) -> None:
         """
         This method validates the request data for AWS text to speech.
 
