@@ -1,14 +1,20 @@
-import abc
-import requests
+# Standard library
 import base64
+import abc
+import json
+
+# Third party
+import requests
 from google.cloud import texttospeech
 import azure.cognitiveservices.speech as speechsdk
 import boto3
-import json
+
+# Local imports
 import secret
 
 
 class TextToSpeech():
+    """Base class for Text to Speech."""
     def __init__(self, req: requests) -> None:
         """Initialize class method."""
         self.validate_request(req)
@@ -55,15 +61,15 @@ class Google(TextToSpeech):
         Returns:
             bytes: The synthezied speech in bytes.
         """
-        # Instantiate a client
+        # Instantiate a client.
         client = texttospeech.TextToSpeechClient(client_options={"api_key": self.api_key, "quota_project_id": self.project_id})
-        # Set the text input to be synthesized
+        # Set the text input to be synthesized.
         synthesis_input = texttospeech.SynthesisInput(text=text)
-        # Build the voice request, select the language code ("en-US") and the ssml voice gender is neutral
+        # Build the voice request, select the language code ("en-US") and the ssml voice gender is neutral.
         voice = texttospeech.VoiceSelectionParams(language_code=language, ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL)
-        # Select the type of audio file you want returned
+        # Select the type of audio file you want returned.
         audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3)
-        # Perform the text-to-speech request on the text input with the selected voice parameters and audio file type
+        # Perform the text-to-speech request on the text input with the selected voice parameters and audio file type.
         response = client.synthesize_speech(input=synthesis_input, voice=voice, audio_config=audio_config)
         return response.audio_content
 
@@ -88,28 +94,27 @@ class Azure(TextToSpeech):
             raise ValueError("Missing API_KEY")
         if not req.variables.get("REGION_KEY"):
             raise ValueError("Missing region")
-
         self.api_key = req.variables.get("API_KEY")
         self.region_key = req.variables.get("REGION_KEY")
 
     def speech(self, text, language) -> bytes:
         """
         Converts the given text into speech with the Google text to speech API.
-        
+
         Input:
             text: The text to be converted into speech.
             language: The language code (BCP-47 format).
-        
+
         Returns:
             bytes: The synthezied speech in bytes.
         """
-        # Set the speech configuration to speech key and region key
+        # Set the speech configuration to speech key and region key.
         speech_config = speechsdk.SpeechConfig(subscription=self.api_key, region=self.region_key)
         # The language of the voice that speaks.
         speech_config.speech_synthesis_language = language
-        # Set the speech
+        # Set the speech.
         speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=None)
-        # Response for the speech synthesizer
+        # Response for the speech synthesizer.
         response = speech_synthesizer.speak_text_async(text).get().audio_data
         return response
 
@@ -168,27 +173,27 @@ def validate_common(req: requests) -> tuple:
         ValueError: If any of the common fields (provider, text, language)
         are missing in the request payload.
     """
-    # Check if the payload is empty
+    # Check if the payload is empty.
     if not req.payload:
         raise ValueError("Missing payload")
 
-    # Check if variables is empty
+    # Check if variables is empty.
     if not req.variables:
         raise ValueError("Missing variables.")
 
-    # Check if provider is empty
+    # Check if provider is empty.
     if not req.payload.get("provider"):
         raise ValueError("Missing provider")
 
-    # Check if text is empty
+    # Check if text is empty.
     if not req.payload.get("text"):
         raise ValueError("Missing Text.")
 
-    # Check if language is empty
+    # Check if language is empty.
     if not req.payload.get("language"):
         raise ValueError("Missing Language.")
 
-    # Return the text and langage
+    # Return the text and langage.
     return (req.payload.get("text"), req.payload.get("language"))
 
 
@@ -201,7 +206,7 @@ IMPLEMENTATIONS = {
 
 def main(req: requests, res: json) -> json:
     """
-    Main Function for Text to Speech
+    Main Function for Text to Speech.
 
     Input:
         req(request): The request from the user.
@@ -235,40 +240,3 @@ def main(req: requests, res: json) -> json:
         "success": True,
         "audio_stream": base64.b64encode(audio_stream).decode(),
     })
-
-
-class MyRequest:
-    """Class for defining My Request structure."""
-
-    def __init__(self, data):
-        self.payload = data.get("payload", {})
-        self.variables = data.get("variables", {})
-
-
-class MyResponse:
-    """Class for defining My Response structure."""
-
-    def __init__(self):
-        self._json = None
-
-    def json(self, data=None):
-        """Create a response for json."""
-        if data is not None:
-            self._json = data
-        return self._json
-
-
-# Azure Request
-req = MyRequest({
-    "payload": {
-        "provider": "azure",
-        "text": "hi",
-        "language": "en-US",
-    },
-    "variables": {
-        "API_KEY": secret.AZURE_API_KEY,
-        "REGION_KEY": secret.AZURE_REGION_KEY,
-    }
-})
-
-print(main(req, MyResponse()))
