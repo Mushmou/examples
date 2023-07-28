@@ -83,7 +83,7 @@ class Google(TextToSpeech):
 
 
 class Azure(TextToSpeech):
-    """This class represents the implementation of Azure text to speech."""
+    """This class represents the implementation of Azure text to speech.""
     def validate_request(self, req: requests) -> None:
         """
         This method validates the request data for Azure text to speech.
@@ -94,9 +94,9 @@ class Azure(TextToSpeech):
             ValueError: If any required value is missing or invalid.
         """
         if not req.variables.get("API_KEY"):
-            raise ValueError("Missing API_KEY")
+            raise ValueError("Missing API_KEY.")
         if not req.variables.get("REGION_KEY"):
-            raise ValueError("Missing REGION_KEY")
+            raise ValueError("Missing REGION_KEY.")
         self.api_key = req.variables.get("API_KEY")
         self.region_key = req.variables.get("REGION_KEY")
 
@@ -179,6 +179,7 @@ list_of_providers = ["google", "azure", "aws"]
 
 
 def validate_common(req: requests) -> tuple[str]:
+
     """
     This function validates the common fields in the request data
         that are independent of the text-to-speech provider.
