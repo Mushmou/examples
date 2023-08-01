@@ -100,11 +100,12 @@ class Azure(TextToSpeech):
         self.region_key = req.variables.get("REGION_KEY")
 
     def get_token(self, subscription_key):
+        """Grabs token with subscription key for Azure."""
         fetch_token_url = 'https://westus.api.cognitive.microsoft.com/sts/v1.0/issuetoken'
         headers = {
             'Ocp-Apim-Subscription-Key': subscription_key
         }
-        response = requests.post(fetch_token_url, headers=headers)
+        response = requests.post(fetch_token_url, headers=headers, timeout=10)
         access_token = str(response.text)
         return access_token
 
@@ -120,7 +121,6 @@ class Azure(TextToSpeech):
             bytes: The synthezied speech in bytes.
         """
         url = f"https://{self.region_key}.tts.speech.microsoft.com/cognitiveservices/v1"
-
         headers_azure = {
             'Content-type': 'application/ssml+xml',
             # 'Ocp-Apim-Subscription-Key': self.api_key,
@@ -128,7 +128,8 @@ class Azure(TextToSpeech):
             'X-Microsoft-OutputFormat': 'audio-16khz-32kbitrate-mono-mp3',
         }
         data_azure = f"<speak version='1.0' xml:lang='{language}'><voice xml:lang='{language}' xml:gender='Male' name='en-US-ChristopherNeural'>{text}</voice></speak>"
-        response = requests.request("POST", url, headers=headers_azure, data=data_azure)
+        response = requests.request("POST", url, headers=headers_azure, data=data_azure, timeout=10)
+        response.raise_for_status()
         return response.content
 
 
@@ -176,7 +177,7 @@ class AWS(TextToSpeech):
             Text=text,
             LanguageCode=language
         )
-        return response["Audiostream"]
+        return response["AudioStream"].read()
 
 
 list_of_providers = ["google", "azure", "aws"]
