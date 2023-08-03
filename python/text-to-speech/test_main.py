@@ -125,8 +125,8 @@ class GoogleTest(unittest.TestCase):
         ) as mock_client:
             # Raise Exception.
             mock_client.side_effect = Exception
-        # Assert the raise.
-        self.assertRaises(Exception, instance.speech, None, "en-US")
+            # Assert the raise.
+            self.assertRaises(Exception, instance.speech, None, "en-US")
 
 
 class AzureTest(unittest.TestCase):
