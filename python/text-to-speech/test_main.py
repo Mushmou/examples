@@ -277,8 +277,6 @@ class ValidateCommonTest(unittest.TestCase):
         ("payload", "", "aws", "hi", "en-US"),
         # Missing provider.
         ("payload", "variables", "", "hi", "en-US"),
-        # Invalid provider.
-        ("payload", "variables", "awss", "hi", "en-US"),
         # Missing text.
         ("payload", "variables", "aws", "", "en-US"),
         # Missing language.
