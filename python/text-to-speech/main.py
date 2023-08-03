@@ -122,6 +122,7 @@ class Azure(TextToSpeech):
             timeout=10,
         )
         # Grab access token valid for 10 minutes.
+        response.raise_for_status()
         return response.text
 
     def speech(self, text: str, language: str) -> bytes:
