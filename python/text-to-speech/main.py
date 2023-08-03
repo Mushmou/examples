@@ -200,7 +200,8 @@ class AWS(TextToSpeech):
         polly_client = boto3.Session(
             aws_access_key_id=self.api_key,
             aws_secret_access_key=self.secret_api_key,
-            region_name=self.REGION).client("polly")
+            region_name=self.REGION,
+        ).client("polly")
 
         # Get response from polly client.
         response = polly_client.synthesize_speech(
