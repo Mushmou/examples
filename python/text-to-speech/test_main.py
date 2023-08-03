@@ -35,7 +35,7 @@ class MyRequest:
     def __init__(
             self,
             data: dict[dict[str, str, str], dict[str, str]],
-            ) -> None:
+        ) -> None:
         self.payload = data.get("payload", {})
         self.variables = data.get("variables", {})
 
