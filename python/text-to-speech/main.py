@@ -8,8 +8,6 @@ import boto3
 import requests
 from google.cloud import texttospeech
 
-SUPPORTED_PROVIDERS = ["google", "azure", "aws"]
-
 
 class TextToSpeech():
     """Base class for Text to Speech."""
@@ -239,10 +237,6 @@ def validate_common(req: requests) -> tuple[str, str, str]:
     if not req.payload.get("provider"):
         raise ValueError("Missing Provider.")
 
-    # Check if provider is in the list
-    if req.payload.get("provider").lower() not in SUPPORTED_PROVIDERS:
-        raise ValueError("Invalid Provider.")
-
     # Check if text is empty.
     if not req.payload.get("text"):
         raise ValueError("Missing Text.")
@@ -278,8 +272,10 @@ def main(req: requests, res: str) -> str:
             provider_class = Google(req)
         elif provider == "azure":
             provider_class = Azure(req)
-        else:
+        elif provider == "aws":
             provider_class = AWS(req)
+        else:
+            raise ValueError("Invalid Provider.")
     except ValueError as value_error:
         return res.json({
             "success": False,
